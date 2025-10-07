@@ -52,6 +52,15 @@ public class InputManager : MonoBehaviour
 
     private void Update()
     {
+        if (keyboard[Key.Escape].wasPressedThisFrame)
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+        }
+
         if (!enableInput) return;
 
         HandleMove();

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -9,11 +10,44 @@ public class MainMenu : MonoBehaviour
     public PressProgressButton dive;
     public PressProgressButton quit;
 
+    private Keyboard keyboard;
+
+    private void Awake()
+    {
+        keyboard = Keyboard.current;
+    }
+
     private void Start()
     {
         image.enabled = false;
         dive.onHoldComplete += HandleDive;
         quit.onHoldComplete += HandleQuit;
+        StartCoroutine(StartMainMenu());
+    }
+
+    private IEnumerator StartMainMenu()
+    {
+        image.enabled = true;
+        int t = 24;
+        for (int i = t; i >= 0; i--) 
+        {
+            image.color = new Color(image.color.r, image.color.g, image.color.b, (float)i / (float)t);
+            yield return null;
+        }
+        yield return new WaitForSeconds(0.2f);
+        image.enabled = false;
+    }
+
+    private void Update()
+    {
+        if (keyboard[Key.Escape].wasPressedThisFrame)
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+        }
     }
 
     private void HandleDive()
@@ -24,7 +58,7 @@ public class MainMenu : MonoBehaviour
     private IEnumerator Dive()
     {
         image.enabled = true;
-        int t = 16;
+        int t = 24;
         for (int i = 0; i <= t; i++)
         {
             image.color = new Color(image.color.r, image.color.g, image.color.b, (float)i / (float)t);
@@ -43,6 +77,5 @@ public class MainMenu : MonoBehaviour
 #else
         Application.Quit();
 #endif
-        Debug.Log("QuitGame() called — 游戏退出请求已触发。");
     }
 }

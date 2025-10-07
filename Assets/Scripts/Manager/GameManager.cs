@@ -80,6 +80,8 @@ public class GameManager : MonoBehaviour
     #region -- ¿ª³¡¶¯»­ 0 -> 1000 --
     private IEnumerator StartSceneRoutine()
     {
+        centerText.text = 0.ToString("D5");
+        yield return new WaitForSeconds(1f);
 
         if (centerText != null)
             yield return AnimateNumber(0, 1000, numberAnimationDuration);

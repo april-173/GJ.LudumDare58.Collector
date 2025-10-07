@@ -42,8 +42,8 @@ MonoBehaviour:
     - line: '|   productName: DeepSea'
     - line: '|   defaultCursor: {instanceID: 0}'
     - line: '|   cursorHotspot: {x: 0, y: 0}'
-    - line: '|   m_SplashScreenBackgroundColor: {r: 0.05490196, g: 0.078431375, b:
-        0.101960786, a: 1}'
+    - line: '|   m_SplashScreenBackgroundColor: {r: 0.026923077, g: 0.03846154, b:
+        0.05, a: 1}'
     - line: '|   m_ShowUnitySplashScreen: 1'
     - line: '|   m_ShowUnitySplashLogo: 1'
     - line: '|   m_SplashScreenOverlayOpacity: 1'

@@ -144,20 +144,20 @@ public class StateManager : MonoBehaviour
 
     public void ChangeOxygen(float value)
     {
-        if (currentOxygen >= maxOxygen) { currentOxygen = maxOxygen;return; }
         currentOxygen += value;
+        if (currentOxygen > maxOxygen) { currentOxygen = maxOxygen; }
     }
 
     public void ChangeEnergy(float value)
     {
-        if(currentEnergy >= maxEnergy) { currentEnergy = maxEnergy;return; }
         currentEnergy += value;
+        if (currentEnergy > maxEnergy) { currentEnergy = maxEnergy; }
     }
 
     public void ChangeHydrogen(float value)
     {
-        if(currentHydrogen >= maxHydrogen) { currentHydrogen = maxHydrogen;return; }
         currentHydrogen += value;
+        if (currentHydrogen > maxHydrogen) { currentHydrogen = maxHydrogen; }
     }
 
     public void GenerateOxygen(float value)

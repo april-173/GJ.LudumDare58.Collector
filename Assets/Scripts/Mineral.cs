@@ -141,7 +141,8 @@ public class Mineral : MonoBehaviour
         }
 
         Destroy(fragment);
-        StartCoroutine(ResourcesAccess());
+        if (StateManager.Instance.HydrogenRation < 1)
+            StartCoroutine(ResourcesAccess());
     }
 
     private IEnumerator ResourcesAccess()
@@ -153,8 +154,6 @@ public class Mineral : MonoBehaviour
             StateManager.Instance.ChangeHydrogen(1);
             yield return new WaitForSeconds(0.01f);
         }
-
-        Debug.Log(random);
     }
 
     public void RadarScan()

@@ -228,6 +228,8 @@ public class RadarPanel : MonoBehaviour
 
     private void ToggleAuto(Button button, ref bool state)
     {
+        AudioManager.Instance.PlayButtonSound();
+
         state = !state;
         if (buttonColorCoroutine != null)
             StopCoroutine(buttonColorCoroutine);
@@ -428,6 +430,7 @@ public class RadarPanel : MonoBehaviour
 
     private IEnumerator GenerateOxygen()
     {
+        AudioManager.Instance.PlayButtonSound();
         generateOxygen.interactable = false;
 
         for (int i = 0; i < generarteValue; i++)
@@ -458,6 +461,7 @@ public class RadarPanel : MonoBehaviour
 
     private IEnumerator GenerateEnergy()
     {
+        AudioManager.Instance.PlayButtonSound();
         generateEnergy.interactable = false;
 
         for (int i = 0; i < generarteValue; i++)
@@ -482,16 +486,19 @@ public class RadarPanel : MonoBehaviour
     #region < °´Å¥ >
     public void MainButton()
     {
+        AudioManager.Instance.PlayButtonSound();
         SceneManager.LoadScene(0);
     }    
 
     public void SurfaceButton()
     {
+        AudioManager.Instance.PlayButtonSound();
         GameManager.Instance.PlayReverseAnimation();
     }
 
     public void HelpButton(bool b)
     {
+        AudioManager.Instance.PlayButtonSound();
         helpPanel.SetActive(b); 
     }
     #endregion

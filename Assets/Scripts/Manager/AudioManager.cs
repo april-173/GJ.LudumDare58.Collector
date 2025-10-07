@@ -1,12 +1,27 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class AudioManager : MonoBehaviour
 {
+    public static AudioManager Instance { get; private set; }
+
     public AudioSource radarAudioSource;
     public AudioClip radarClip;
+    public AudioSource buttonAudioSource;
+    public AudioClip buttonAudioClip;
 
     private bool subscribed = false;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
     private void OnEnable()
     {
@@ -59,4 +74,9 @@ public class AudioManager : MonoBehaviour
         radarAudioSource.Stop();
     }
     #endregion
+
+    public void PlayButtonSound()
+    {
+        buttonAudioSource.PlayOneShot(buttonAudioClip,0.2f);
+    }
 }
