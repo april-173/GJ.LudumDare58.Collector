@@ -114,6 +114,8 @@ public class Target : MonoBehaviour
         isCollected = true;
         isCollecting = false;
 
+        AudioManager.Instance.PlayMineralSound();
+
         StartCoroutine(FlyToPlayer());
     }
 
@@ -127,7 +129,7 @@ public class Target : MonoBehaviour
 
     private void OnCollected()
     {
-        radarPanel.TargetCollect(itemID);
+        radarPanel.StartTargetCollect(itemID);
     }
 
     private IEnumerator FlyToPlayer()
@@ -145,8 +147,10 @@ public class Target : MonoBehaviour
             speed += Time.deltaTime * 10f;
 
             if (Vector3.Distance(transform.position, targetPos) < minDistance)
+            {
+                AudioManager.Instance.PlayButtonSound();
                 break;
-
+            }
             yield return null;
         }
 

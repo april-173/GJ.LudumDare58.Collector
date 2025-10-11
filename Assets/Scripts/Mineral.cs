@@ -97,6 +97,7 @@ public class Mineral : MonoBehaviour
     private IEnumerator BreakMineral()
     {
         isBroken = true;
+        AudioManager.Instance.PlayMineralSound();
 
         Vector3 startScale = mineralVisual.localScale;
         Vector3 targetScale = startScale * breakScale;

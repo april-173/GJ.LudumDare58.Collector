@@ -1,5 +1,6 @@
 using System.Collections;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -9,9 +10,13 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [Header("UI References")]
-    public Image fullScreenImage;        // 全屏背景
+    public RadarPanel radarPanel;
+    public Image fullScreenImage;       // 全屏背景
+    public Image fullScreenImageRes;    // 备用全屏背景
     public TextMeshProUGUI centerText;  // 中心数字/文字
-    public Button diveButton;            // Dive 按钮
+    public Button diveButton;           // Dive 按钮
+    public Button mainButton;           // Dive 按钮
+    public GameObject[] targetImages;
 
     [Header("Animation Settings")]
     public float fadeDuration = 1f;
@@ -30,6 +35,13 @@ public class GameManager : MonoBehaviour
 
         // 初始化 UI 状态
         ResetUI();
+
+        PressProgressButton dive = diveButton.GetComponent<PressProgressButton>();
+        if (dive != null)
+            dive.onHoldComplete += StartDive;
+        PressProgressButton main = mainButton.GetComponent<PressProgressButton>();
+        if (main != null)
+            main.onHoldComplete += StartMain;
     }
 
     private void OnEnable()
@@ -67,6 +79,12 @@ public class GameManager : MonoBehaviour
             fullScreenImage.color = new Color(fullScreenImage.color.r, fullScreenImage.color.g, fullScreenImage.color.b, 1f);
         }
 
+        if(fullScreenImageRes != null)
+        {
+            fullScreenImageRes.gameObject.SetActive(false);
+            fullScreenImageRes.color = new Color(fullScreenImageRes.color.r, fullScreenImageRes.color.g, fullScreenImageRes.color.b, 0f);
+        }
+
         if (centerText != null)
         {
             centerText.gameObject.SetActive(true);
@@ -75,13 +93,30 @@ public class GameManager : MonoBehaviour
 
         if (diveButton != null)
             diveButton.gameObject.SetActive(false);
+
+        if(mainButton != null)
+            mainButton.gameObject.SetActive(false);
+
+        if(targetImages != null)
+            foreach (var image in targetImages)
+                image.gameObject.SetActive(false); 
     }
 
-    #region -- 开场动画 0 -> 1000 --
+    #region < 开场动画 >
     private IEnumerator StartSceneRoutine()
     {
         centerText.text = 0.ToString("D5");
+
+        if (fullScreenImageRes != null)
+        {
+            fullScreenImageRes.gameObject.SetActive(true);
+            yield return FadeImage(fullScreenImageRes, 1f, 0f, fadeDuration);
+        }
+
         yield return new WaitForSeconds(1f);
+
+        if (fullScreenImageRes != null)
+            fullScreenImageRes.gameObject.SetActive(false);
 
         if (centerText != null)
             yield return AnimateNumber(0, 1000, numberAnimationDuration);
@@ -102,7 +137,7 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
-    #region -- 反向动画 1000 -> 0 并显示 Dive 按钮 --
+    #region < 反向动画 >
     public void PlayReverseAnimation()
     {
         StartCoroutine(ReverseRoutine());
@@ -122,18 +157,22 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(pauseTime);
 
         if (diveButton != null)
-        {
             diveButton.gameObject.SetActive(true);
-            diveButton.onClick.RemoveAllListeners();
-            diveButton.onClick.AddListener(() =>
-            {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            });
-        }
+
+        if (mainButton != null)
+            mainButton.gameObject.SetActive(true);
+
+        if(targetImages != null)
+            foreach (var image in targetImages)
+                image.gameObject.SetActive(true);
+
+        yield return new WaitForSeconds(1f);
+
+        StartCoroutine(SettleAccounts());
     }
     #endregion
 
-    #region -- 死亡动画 --
+    #region < 死亡动画 >
     public void PlayDeathAnimation(string deathMessage)
     {
         StartCoroutine(DeathRoutine(deathMessage));
@@ -155,18 +194,14 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(pauseTime);
 
         if (diveButton != null)
-        {
             diveButton.gameObject.SetActive(true);
-            diveButton.onClick.RemoveAllListeners();
-            diveButton.onClick.AddListener(() =>
-            {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            });
-        }
+
+        if (mainButton != null)
+            mainButton.gameObject.SetActive(true);
     }
     #endregion
 
-    #region -- 数字动画 --
+    #region < 数字动画 >
     private IEnumerator AnimateNumber(int from, int to, float duration)
     {
         float t = 0f;
@@ -183,7 +218,7 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
-    #region -- 公共淡入淡出方法 --
+    #region < 公共淡入淡出方法 >
     public IEnumerator FadeImage(Image img, float fromAlpha, float toAlpha, float duration)
     {
         if (img == null) yield break;
@@ -201,6 +236,60 @@ public class GameManager : MonoBehaviour
 
         img.color = new Color(c.r, c.g, c.b, toAlpha);
     }
+    #endregion
+
+    #region < 重置与退出 >
+    public void StartDive()
+    {
+        AudioManager.Instance.PlayButtonSound();
+        StartCoroutine(Dive());
+    }
+
+    private IEnumerator Dive()
+    {
+        if (fullScreenImageRes != null)
+        {
+            fullScreenImageRes.gameObject.SetActive(true);
+            yield return FadeImage(fullScreenImageRes, 0f, 1f, fadeDuration);
+        }
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void StartMain()
+    {
+        AudioManager.Instance.PlayButtonSound();
+        StartCoroutine(Main());
+    }
+
+    private IEnumerator Main()
+    {
+        if (fullScreenImageRes != null)
+        {
+            fullScreenImageRes.gameObject.SetActive(true);
+            yield return FadeImage(fullScreenImageRes, 0f, 1f, fadeDuration);
+        }
+
+        SceneManager.LoadScene(0);
+    }
+
+    #endregion
+
+    #region < 结算 >
+    private IEnumerator SettleAccounts()
+    {
+        for (int i = 0; i < radarPanel.targetsState.Length; i++)
+        {
+            if (!radarPanel.targetsState[i]) continue;
+            for (int j = 0; j < targetImages[i].transform.childCount; j++)
+            {
+                targetImages[i].transform.GetChild(j).GetComponent<Image>().color = radarPanel.onColor;
+                AudioManager.Instance.PlayButtonSound();
+            }
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
     #endregion
 }
 

@@ -54,11 +54,11 @@ public class InputManager : MonoBehaviour
     {
         if (keyboard[Key.Escape].wasPressedThisFrame)
         {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
+//#if UNITY_EDITOR
+//            UnityEditor.EditorApplication.isPlaying = false;
+//#else
+//        Application.Quit();
+//#endif
         }
 
         if (!enableInput) return;

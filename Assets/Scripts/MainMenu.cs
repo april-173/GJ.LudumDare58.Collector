@@ -9,6 +9,8 @@ public class MainMenu : MonoBehaviour
     public Image image;
     public PressProgressButton dive;
     public PressProgressButton quit;
+    public AudioSource buttonAudioSource;
+    public AudioClip buttonAudioClip;
 
     private Keyboard keyboard;
 
@@ -57,6 +59,7 @@ public class MainMenu : MonoBehaviour
 
     private IEnumerator Dive()
     {
+        PlayButtonAudio();
         image.enabled = true;
         int t = 24;
         for (int i = 0; i <= t; i++)
@@ -72,10 +75,22 @@ public class MainMenu : MonoBehaviour
 
     private void HandleQuit()
     {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
+        StartCoroutine(Quit());
+    }
+
+    private IEnumerator Quit()
+    {
+        PlayButtonAudio();
+        yield return new WaitForSeconds(0.2f);
+//#if UNITY_EDITOR
+//        UnityEditor.EditorApplication.isPlaying = false;
+//#else
+//        Application.Quit();
+//#endif
+    }
+
+    private void PlayButtonAudio()
+    {
+        buttonAudioSource.PlayOneShot(buttonAudioClip, 0.5f);
     }
 }

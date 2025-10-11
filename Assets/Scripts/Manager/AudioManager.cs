@@ -9,7 +9,9 @@ public class AudioManager : MonoBehaviour
     public AudioSource radarAudioSource;
     public AudioClip radarClip;
     public AudioSource buttonAudioSource;
-    public AudioClip buttonAudioClip;
+    public AudioClip buttonClip;
+    public AudioSource mineralAudioSource;
+    public AudioClip mineralClip;
 
     private bool subscribed = false;
 
@@ -77,6 +79,11 @@ public class AudioManager : MonoBehaviour
 
     public void PlayButtonSound()
     {
-        buttonAudioSource.PlayOneShot(buttonAudioClip,0.2f);
+        buttonAudioSource.PlayOneShot(buttonClip,0.5f);
+    }
+
+    public void PlayMineralSound()
+    {
+        mineralAudioSource.PlayOneShot(mineralClip, 0.3f);
     }
 }

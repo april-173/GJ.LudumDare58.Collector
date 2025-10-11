@@ -82,8 +82,11 @@ public class RadarPanel : MonoBehaviour
     public Button generateOxygen;
     public Button generateEnergy;
     public int generarteValue;
+    public float backupEnergyColorRecoveryTime;
 
     private Vector2 backupEnergyImageBaseSize;
+    private float lastBackupEnergyValue;
+    private float backupEnergyColorRecoveryTimer;
 
     [Header("Help")]
     public GameObject helpPanel;
@@ -96,6 +99,7 @@ public class RadarPanel : MonoBehaviour
 
     [Header("Target")]
     public Image[] targets = new Image[6];
+    public bool[] targetsState = new bool[6];
 
 
     private void Awake()
@@ -159,6 +163,8 @@ public class RadarPanel : MonoBehaviour
         UpdateEnergyConsumption();
         DepthDisplay();
         UpdateState();
+
+        BackupEnergyColor();
     }
 
     private void OnDisable()
@@ -432,18 +438,22 @@ public class RadarPanel : MonoBehaviour
     {
         AudioManager.Instance.PlayButtonSound();
         generateOxygen.interactable = false;
+        Color c = oxygenImage.color;
+        StartCoroutine(ChangeColor(oxygenImage, c, Color.white, 16));
 
         for (int i = 0; i < generarteValue; i++)
         {
             StateManager.Instance.GenerateOxygen(1);
             generateOxygen.GetComponent<Image>().color = Color.Lerp(offColor, onColor, (float)i / (float)generarteValue);
-            yield return new WaitForSeconds(0.005f);
-        }
-
-        for (int i = 0; i < generarteValue; i++)
-        {
-            generateOxygen.GetComponent<Image>().color = Color.Lerp(onColor, offColor, (float)i / (float)generarteValue);
             yield return new WaitForSeconds(0.001f);
+        }
+        StartCoroutine(ChangeColor(oxygenImage, Color.white, c, 16));
+
+        float t = 16;
+        for (int i = 0; i < t; i++)
+        {
+            generateOxygen.GetComponent<Image>().color = Color.Lerp(onColor, offColor, (float)i / (float)t);
+            yield return null;
         }
 
         generateOxygen.GetComponent<Image>().color = offColor;
@@ -463,23 +473,81 @@ public class RadarPanel : MonoBehaviour
     {
         AudioManager.Instance.PlayButtonSound();
         generateEnergy.interactable = false;
+        Color c = energyImage.color;
+        StartCoroutine(ChangeColor(energyImage, c, Color.white, 16));
 
         for (int i = 0; i < generarteValue; i++)
         {
             StateManager.Instance.GenerateEnergy(1);
             generateEnergy.GetComponent<Image>().color = Color.Lerp(offColor, onColor, (float)i / (float)generarteValue);
-            yield return new WaitForSeconds(0.005f);
-        }
-
-        for (int i = 0; i < generarteValue; i++)
-        {
-            generateEnergy.GetComponent<Image>().color = Color.Lerp(onColor, offColor, (float)i / (float)generarteValue);
             yield return new WaitForSeconds(0.001f);
+        }
+        StartCoroutine(ChangeColor(energyImage, Color.white, c, 16));
+
+        float t = 16;
+        for (int i = 0; i < t; i++)
+        {
+            generateEnergy.GetComponent<Image>().color = Color.Lerp(onColor, offColor, (float)i / (float)t);
+            yield return null;
         }
 
         generateEnergy.GetComponent<Image>().color = offColor;
         generateEnergy.interactable = true;
     }
+
+    private IEnumerator ChangeColor(Image image, Color startColor, Color endColor,float time)
+    {
+        for (int i = 0; i <= time; i++)
+        {
+            float t = (float)i / (float)time;
+            image.color = Color.Lerp(startColor, endColor, t);
+            yield return null;
+        }
+        image.color = endColor;
+        colorCoroutine = null;
+    }
+
+    private Coroutine colorCoroutine;
+    private bool isWhite;
+    private bool isOriginal;
+    private void BackupEnergyColor()
+    {
+        float currentHydrogen = StateManager.Instance.CurrentHydrogen;
+        if (currentHydrogen > lastBackupEnergyValue)
+        {
+            if (isOriginal && colorCoroutine != null) StopCoroutine(colorCoroutine);
+            if (!isWhite) colorCoroutine = StartCoroutine(ChangeColor(backupEnergyImage, backupEnergyImage.color, Color.white, 18));
+            lastBackupEnergyValue = currentHydrogen;
+            backupEnergyColorRecoveryTimer = 0;
+            isWhite = true;
+            isOriginal = false;
+        }
+        else if(currentHydrogen < lastBackupEnergyValue)
+        {
+            lastBackupEnergyValue = currentHydrogen;
+        }
+
+        if (lastBackupEnergyValue == currentHydrogen && backupEnergyColorRecoveryTimer < backupEnergyColorRecoveryTime)
+        {
+            backupEnergyColorRecoveryTimer += Time.deltaTime;
+        }
+
+        if (backupEnergyColorRecoveryTimer >= backupEnergyColorRecoveryTime && backupEnergyImage.color != onColor)
+        {
+            if (colorCoroutine == null)
+                colorCoroutine = StartCoroutine(ChangeColor(backupEnergyImage, Color.white, onColor, 24));
+            isWhite = false;
+            isOriginal = true;
+        }
+
+        if (backupEnergyColorRecoveryTimer >= backupEnergyColorRecoveryTime && colorCoroutine == null) 
+        {
+            isWhite = false;
+            isOriginal = false;
+            backupEnergyImage.color = onColor;
+        }
+    }
+
 
     #endregion
 
@@ -487,7 +555,7 @@ public class RadarPanel : MonoBehaviour
     public void MainButton()
     {
         AudioManager.Instance.PlayButtonSound();
-        SceneManager.LoadScene(0);
+        GameManager.Instance.StartMain();
     }    
 
     public void SurfaceButton()
@@ -499,16 +567,33 @@ public class RadarPanel : MonoBehaviour
     public void HelpButton(bool b)
     {
         AudioManager.Instance.PlayButtonSound();
-        helpPanel.SetActive(b); 
+        helpPanel.SetActive(b);
+        InputManager.Instance.enableInput = !b;
     }
     #endregion
 
     #region < Ä¿±ê >
 
-    public void TargetCollect(int id)
+    public void StartTargetCollect(int id)
+    {
+        StartCoroutine(TargetCollect(id));
+    }
+
+    private IEnumerator TargetCollect(int id)
     {
         if (id > targets.Length) id = targets.Length;
-        targets[id - 1].color = onColor;
+        targetsState[id - 1] = true;
+
+        targets[id - 1].color = Color.white;
+        yield return new WaitForSeconds(0.2f);
+        targets[id - 1].color = offColor;
+
+        float t = 18;
+        for (int i = 0; i < t; i++)
+        {
+            targets[id - 1].color = Color.Lerp(offColor, onColor, (float)i / t);
+            yield return null;
+        }
     }
 
     #endregion

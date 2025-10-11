@@ -22,12 +22,14 @@ public class StateManager : MonoBehaviour
     private bool isIdle;
     private bool isMove;
     private bool isFastMove;
+    private bool isDeath;
 
     private bool subscribed = false;
 
     public float OxygenRatio => currentOxygen / maxOxygen;
     public float EnergyRation => currentEnergy / maxEnergy;
     public float HydrogenRation => currentHydrogen / maxHydrogen;
+    public float CurrentHydrogen => currentHydrogen;
 
     private void Awake()
     {
@@ -41,6 +43,7 @@ public class StateManager : MonoBehaviour
         currentOxygen = maxOxygen;
         currentEnergy = maxEnergy;
         currentHydrogen = 360;
+        isDeath = false;
     }
 
     private void OnEnable()
@@ -63,8 +66,11 @@ public class StateManager : MonoBehaviour
         UpdateOxygen();
         UpdateEnergy();
 
-        if (currentEnergy <= 0 || currentOxygen <= 0)
+        if ((currentEnergy <= 0 || currentOxygen <= 0) && !isDeath) 
+        {
+            isDeath = true;
             GameManager.Instance.PlayDeathAnimation("DEATH");
+        }
     }
 
     #region < ÊÂ¼þ¶©ÔÄ >

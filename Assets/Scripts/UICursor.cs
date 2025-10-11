@@ -21,7 +21,7 @@ public class UICursor : MonoBehaviour
         // 使用透明光标替代系统光标，但不隐藏它，保证 UI 交互正常
         if (transparentCursor != null)
         {
-            Cursor.SetCursor(transparentCursor, Vector2.zero, CursorMode.Auto);
+            //Cursor.SetCursor(transparentCursor, Vector2.zero, CursorMode.Auto);
         }
         Cursor.visible = true;
 
@@ -42,6 +42,19 @@ public class UICursor : MonoBehaviour
             // 记录初始缩放
             originalScale = cursorRect.localScale;
         }
+    }
+
+    private void OnEnable()
+    {
+        Vector2 screenPos = Mouse.current.position.ReadValue();
+        Vector2 localPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvas.transform as RectTransform,
+            screenPos,
+            canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
+            out localPos
+        );
+        cursorRect.anchoredPosition = localPos;
     }
 
     private Vector2 velocity = Vector2.zero;
