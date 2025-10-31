@@ -12,7 +12,7 @@ public static class ColliderAlwaysVisibleGizmo
 
     private static void OnSceneGUI(SceneView sceneView)
     {
-        Handles.color = new Color(0f, 1f, 1f, 0.6f); // 青色线条
+        Handles.color = new Color(0f, 1f, 1f, 0.6f);
 
         // 绘制所有 PolygonCollider2D
         foreach (var collider in Object.FindObjectsByType<PolygonCollider2D>(FindObjectsSortMode.None))

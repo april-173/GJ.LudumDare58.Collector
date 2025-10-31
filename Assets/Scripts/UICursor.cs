@@ -5,9 +5,9 @@ using UnityEngine.InputSystem; // 新输入系统
 public class UICursor : MonoBehaviour
 {
     [Header("UI 光标设置")]
-    [SerializeField] private RectTransform cursorRect; // UI 光标对象（Image）
+    [SerializeField] private RectTransform cursorRect; // UI 光标对象
     [SerializeField] private Canvas canvas;            // 挂载的 Canvas
-    [SerializeField] private Texture2D transparentCursor; // 一张透明的光标图（1x1透明png）
+    [SerializeField] private Texture2D transparentCursor; // 一张透明的光标图
 
     [Header("点击缩放设置")]
     [SerializeField] private bool enableClickScale = true; // 是否启用点击缩放
@@ -18,7 +18,6 @@ public class UICursor : MonoBehaviour
 
     private void Awake()
     {
-        // 使用透明光标替代系统光标，但不隐藏它，保证 UI 交互正常
         if (transparentCursor != null)
         {
             //Cursor.SetCursor(transparentCursor, Vector2.zero, CursorMode.Auto);
